@@ -23,9 +23,11 @@ struct FlutterMarker {
 }
 
 protocol MarkerDataSource {
-    func addMarkers(_ newMarkers: [FlutterMarker])
-    func removeMarkers(ids: [String])
-    func replaceMarkers(newMarkers: [FlutterMarker])
+    associatedtype ID
+    associatedtype Marker
+    func addMarkers(_ newMarkers: [Marker])
+    func removeMarkers(ids: [ID])
+    func replaceMarkers(newMarkers: [Marker])
     func clearMarkers()
 }
 
