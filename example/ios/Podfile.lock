@@ -1,0 +1,22 @@
+PODS:
+  - apple_maps (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - apple_maps (from `.symlinks/plugins/apple_maps/ios`)
+  - Flutter (from `Flutter`)
+
+EXTERNAL SOURCES:
+  apple_maps:
+    :path: ".symlinks/plugins/apple_maps/ios"
+  Flutter:
+    :path: Flutter
+
+SPEC CHECKSUMS:
+  apple_maps: 80252971064bfb20db23a38c7e71f243fa80572b
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.10.1

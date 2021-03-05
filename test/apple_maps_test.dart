@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:apple_maps/apple_maps.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('apple_maps');
@@ -17,7 +16,4 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await AppleMaps.platformVersion, '42');
-  });
 }
