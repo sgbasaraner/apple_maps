@@ -5,7 +5,7 @@
 //  Created by sarupu on 5.03.2021.
 //
 
-import Foundation
+import MapKit
 import Flutter
 
 struct FlutterMarker {
@@ -20,6 +20,10 @@ struct FlutterMarker {
         self.icon = image
         self.id = id
     }
+    
+    func toAnnotation() -> MKAnnotation {
+        fatalError("unimplemented")
+    }
 }
 
 protocol MarkerDataSource {
@@ -32,24 +36,31 @@ protocol MarkerDataSource {
 }
 
 class MarkerManager: MarkerDataSource {
-    private var markers: [String : FlutterMarker] = [:]
+    private var markers: [String : MKAnnotation] = [:]
     
-    init(initialMarkers: [FlutterMarker]? = nil) {
+    weak var mapView: MKMapView?
+    
+    init(mapView: MKMapView, initialMarkers: [FlutterMarker]? = nil) {
         if let initialMarkers = initialMarkers {
             addMarkers(initialMarkers)
         }
+        self.mapView = mapView
     }
     
     func addMarkers(_ newMarkers: [FlutterMarker]) {
-        for marker in newMarkers {
-            markers[marker.id] = marker
-        }
+        let newAnnotations = newMarkers.compactMap({ (marker) -> MKAnnotation? in
+            guard markers[marker.id] == nil else { return nil }
+            let annotation = marker.toAnnotation()
+            markers[marker.id] = annotation
+            return annotation
+        })
+        
+        mapView?.addAnnotations(newAnnotations)
     }
     
     func removeMarkers(ids: [String]) {
-        for id in ids {
-            markers.removeValue(forKey: id)
-        }
+        let annotationsToRemove = ids.compactMap { markers.removeValue(forKey: $0) }
+        mapView?.removeAnnotations(annotationsToRemove)
     }
     
     func replaceMarkers(newMarkers: [FlutterMarker]) {
@@ -59,5 +70,6 @@ class MarkerManager: MarkerDataSource {
     
     func clearMarkers() {
         markers.removeAll()
+        mapView?.removeAnnotations(mapView?.annotations ?? [])
     }
 }
