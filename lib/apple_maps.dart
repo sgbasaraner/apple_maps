@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -569,99 +570,19 @@ class MinMaxZoomPreference {
   }
 }
 
-/// Configuration options for the AppleMaps user interface.
-///
-/// When used to change configuration, null values will be interpreted as
-/// "do not change this configuration option".
-class _AppleMapOptions {
-  _AppleMapOptions({
-    this.compassEnabled,
-    this.trafficEnabled,
-    this.mapType,
-    this.minMaxZoomPreference,
-    this.rotateGesturesEnabled,
-    this.scrollGesturesEnabled,
-    this.pitchGesturesEnabled,
-    this.trackingMode,
-    this.zoomGesturesEnabled,
-    this.myLocationEnabled,
-    this.myLocationButtonEnabled,
-    this.padding,
-  });
+class FlutterMarker {
+  final String id;
+  final Uint8List icon;
 
-  static _AppleMapOptions fromWidget(AppleMap map) {
-    return _AppleMapOptions(
-      compassEnabled: map.compassEnabled,
-      trafficEnabled: map.trafficEnabled,
-      mapType: map.mapType,
-      minMaxZoomPreference: map.minMaxZoomPreference,
-      rotateGesturesEnabled: map.rotateGesturesEnabled,
-      scrollGesturesEnabled: map.scrollGesturesEnabled,
-      pitchGesturesEnabled: map.pitchGesturesEnabled,
-      trackingMode: map.trackingMode,
-      zoomGesturesEnabled: map.zoomGesturesEnabled,
-      myLocationEnabled: map.myLocationEnabled,
-      myLocationButtonEnabled: map.myLocationButtonEnabled,
-      padding: map.padding,
-    );
+  FlutterMarker(this.id, this.icon);
+
+  @override
+  bool operator ==(Object o) {
+    if (identical(this, o)) return true;
+
+    return o is FlutterMarker && o.id == id;
   }
 
-  final bool? compassEnabled;
-
-  final bool? trafficEnabled;
-
-  final MapType? mapType;
-
-  final MinMaxZoomPreference? minMaxZoomPreference;
-
-  final bool? rotateGesturesEnabled;
-
-  final bool? scrollGesturesEnabled;
-
-  final bool? pitchGesturesEnabled;
-
-  final TrackingMode? trackingMode;
-
-  final bool? zoomGesturesEnabled;
-
-  final bool? myLocationEnabled;
-
-  final bool? myLocationButtonEnabled;
-
-  final EdgeInsets? padding;
-
-  Map<String, dynamic> toMap() {
-    final Map<String, dynamic> optionsMap = <String, dynamic>{};
-
-    void addIfNonNull(String fieldName, dynamic value) {
-      if (value != null) {
-        optionsMap[fieldName] = value;
-      }
-    }
-
-    addIfNonNull('compassEnabled', compassEnabled);
-    addIfNonNull('trafficEnabled', trafficEnabled);
-    addIfNonNull('mapType', mapType?.index);
-    addIfNonNull('minMaxZoomPreference', minMaxZoomPreference?._toJson());
-    addIfNonNull('rotateGesturesEnabled', rotateGesturesEnabled);
-    addIfNonNull('scrollGesturesEnabled', scrollGesturesEnabled);
-    addIfNonNull('pitchGesturesEnabled', pitchGesturesEnabled);
-    addIfNonNull('zoomGesturesEnabled', zoomGesturesEnabled);
-    addIfNonNull('trackingMode', trackingMode?.index);
-    addIfNonNull('myLocationEnabled', myLocationEnabled);
-    addIfNonNull('myLocationButtonEnabled', myLocationButtonEnabled);
-    addIfNonNull('padding', _serializePadding(padding));
-    return optionsMap;
-  }
-
-  Map<String, dynamic> updatesMap(_AppleMapOptions newOptions) {
-    final Map<String, dynamic> prevOptionsMap = toMap();
-
-    return newOptions.toMap()..removeWhere((String key, dynamic value) => prevOptionsMap[key] == value);
-  }
-
-  List<double>? _serializePadding(EdgeInsets? insets) {
-    if (insets == null) return null;
-    return [insets.top, insets.left, insets.bottom, insets.right];
-  }
+  @override
+  int get hashCode => id.hashCode;
 }
