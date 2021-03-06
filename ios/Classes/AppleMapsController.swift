@@ -13,14 +13,11 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
         mapView
     }
     
-    var mapView: AppleMapsView!
-    var registrar: FlutterPluginRegistrar
-    var channel: FlutterMethodChannel
-    var initialCameraPosition: [String: Any]
-    var options: [String: Any]
-    var onCalloutTapGestureRecognizer: UITapGestureRecognizer?
-    var currentlySelectedAnnotation: String?
-    
+    let mapView: AppleMapsView!
+    let registrar: FlutterPluginRegistrar
+    let channel: FlutterMethodChannel
+    let initialCameraPosition: [String: Any]
+    let options: [String: Any]
     
     
     public init(withFrame frame: CGRect, withRegistrar registrar: FlutterPluginRegistrar, withargs args: Dictionary<String, Any> ,withId id: Int64) {
