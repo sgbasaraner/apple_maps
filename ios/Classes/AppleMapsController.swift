@@ -18,6 +18,7 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
     let channel: FlutterMethodChannel
     let initialCameraPosition: [String: Any]
     let options: [String: Any]
+    let markerManager: MarkerManager
     
     
     public init(withFrame frame: CGRect, withRegistrar registrar: FlutterPluginRegistrar, withargs args: Dictionary<String, Any> ,withId id: Int64) {
@@ -28,6 +29,7 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
         self.registrar = registrar
         
         self.initialCameraPosition = args["initialCameraPosition"]! as! Dictionary<String, Any>
+        self.markerManager = MarkerManager(mapView: mapView)
         super.init()
         
         self.mapView.delegate = self
