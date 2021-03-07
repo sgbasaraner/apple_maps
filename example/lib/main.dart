@@ -143,6 +143,8 @@ class PlaceAnnotationClusteredBodyState extends State<PlaceAnnotationClusteredBo
 
   late BatchPinImageProcessorAnnotation _processor;
 
+  final Set<String> markerIds = HashSet();
+
   @override
   void initState() {
     super.initState();
@@ -150,6 +152,7 @@ class PlaceAnnotationClusteredBodyState extends State<PlaceAnnotationClusteredBo
         batchSize: 4,
         onBatchFinished: (list) {
           print("finished batch");
+          markerIds.addAll(list.map((e) => e.id));
           controller?.addMarkers(list);
         },
         onPinSelect: (p) => print(p.url));
@@ -165,8 +168,8 @@ class PlaceAnnotationClusteredBodyState extends State<PlaceAnnotationClusteredBo
             child: Container(
               child: AppleMap(
                 onMapCreated: _onMapCreated,
-                onCameraIdle: () {
-                  print("idle camera");
+                onCameraIdle: (bounds) {
+                  print("idle camera $bounds");
                 },
                 initialCameraPosition: CameraPosition(
                   target: center,
@@ -176,7 +179,7 @@ class PlaceAnnotationClusteredBodyState extends State<PlaceAnnotationClusteredBo
             ),
           ),
           TextButton(
-            child: const Text('customAnnotation from bytes'),
+            child: const Text('add markers'),
             onPressed: () {
               final pins = imagesToLoad.map((s) {
                 // _annotationIdCounter++;
@@ -187,6 +190,15 @@ class PlaceAnnotationClusteredBodyState extends State<PlaceAnnotationClusteredBo
                 return Pin(s, LatLng(center.latitude - randlat, center.longitude + randlng));
               }).toList();
               _processor.process(pins);
+            },
+          ),
+          TextButton(
+            child: const Text('delete random half of markers'),
+            onPressed: () {
+              controller?.removeMarkers(markerIds.take(markerIds.length ~/ 2).toList().map((e) {
+                markerIds.remove(e);
+                return e;
+              }).toList());
             },
           ),
         ]);

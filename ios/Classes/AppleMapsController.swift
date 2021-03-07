@@ -37,9 +37,13 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
         self.setMethodCallHandlers()
     }
     
+    public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        return FlutterAnnotationView(annotation: annotation, reuseIdentifier: nil)
+    }
+    
     // onIdle
     public func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        self.channel.invokeMethod("camera#onIdle", arguments: "")
+        self.channel.invokeMethod("camera#onIdle", arguments: mapView.getVisibleRegion())
     }
     
     // onMoveStarted

@@ -204,20 +204,18 @@ public extension MKMapView {
         return altitude
     }
     
-    func getVisibleRegion() -> Dictionary<String, Array<Double>> {
-        guard self.bounds.size != CGSize.zero else {
-            return ["northeast": [0.0, 0.0], "southwest": [0.0, 0.0]]
-        }
-        let nePoint = CGPoint(x: self.bounds.maxX, y: self.bounds.origin.y)
-        let swPoint = CGPoint(x: self.bounds.minX, y: self.bounds.maxY)
-      
-        let neCoord = self.convert(nePoint, toCoordinateFrom: self)
-        let swCoord = self.convert(swPoint, toCoordinateFrom: self)
-    
+    private static func calculateBounds(rect: MKMapRect) -> Dictionary<String, [Double]> {
+        let northEastCoordinate = MKMapPoint(x: rect.maxX, y: rect.minY).coordinate
+        let southWestCoordinate = MKMapPoint(x: rect.minX, y: rect.maxY).coordinate
+            
         return [
-            "northeast": [neCoord.latitude, neCoord.longitude],
-            "southwest": [swCoord.latitude, swCoord.longitude]
+            "northeast": [northEastCoordinate.latitude, northEastCoordinate.longitude],
+            "southwest": [southWestCoordinate.latitude, southWestCoordinate.longitude]
         ]
+    }
+    
+    func getVisibleRegion() -> Dictionary<String, [Double]> {
+        MKMapView.calculateBounds(rect: visibleMapRect)
     }
     
     func zoomIn(animated: Bool) {

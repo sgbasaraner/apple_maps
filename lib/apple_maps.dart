@@ -40,7 +40,10 @@ class AppleMapsController {
         _appleMapState.widget.onCameraMoveStarted?.call();
         break;
       case 'camera#onIdle':
-        _appleMapState.widget.onCameraIdle?.call();
+        final map = call.arguments;
+        _appleMapState.widget.onCameraIdle?.call(LatLngBounds(
+            southwest: LatLng(map["southwest"][0], map["southwest"][1]),
+            northeast: LatLng(map["northeast"][0], map["northeast"][1])));
         break;
       default:
         throw MissingPluginException();
@@ -347,21 +350,6 @@ class LatLngBounds {
     }
   }
 
-  @visibleForTesting
-  static LatLngBounds? fromList(dynamic json) {
-    if (json == null) {
-      return null;
-    }
-    final sw = LatLng._fromJson(json[0]);
-    final ne = LatLng._fromJson(json[1]);
-    if (sw == null || ne == null) return null;
-
-    return LatLngBounds(
-      southwest: sw,
-      northeast: ne,
-    );
-  }
-
   @override
   String toString() {
     return '$runtimeType($southwest, $northeast)';
@@ -455,7 +443,7 @@ class AppleMap extends StatefulWidget {
 
   /// Called when camera movement has ended, there are no pending
   /// animations and the user has stopped interacting with the map.
-  final VoidCallback? onCameraIdle;
+  final Function(LatLngBounds)? onCameraIdle;
 
   /// True if a "My Location" layer should be shown on the map.
   ///

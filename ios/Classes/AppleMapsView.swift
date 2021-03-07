@@ -13,6 +13,43 @@ enum BUTTON_IDS: Int {
     case LOCATION = 100
 }
 
+class FlutterAnnotationView: MKAnnotationView {
+    override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+        super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        didSetAnnotation(annotation: annotation)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override var annotation: MKAnnotation? {
+        didSet {
+            didSetAnnotation(annotation: annotation)
+        }
+    }
+    
+    func didSetAnnotation(annotation: MKAnnotation?) {
+        if let flutterAnnotation = annotation as? FlutterAnnotation {
+            return configure(annotation: flutterAnnotation)
+        }
+        
+        if let annotation = annotation as? MKClusterAnnotation {
+            if let firstFlutterChild = annotation.memberAnnotations.lazy.compactMap({ $0 as? FlutterAnnotation }).first {
+                return configure(annotation: firstFlutterChild)
+            } else {
+                return print("No FlutterAnnotation child found for cluster.")
+            }
+        }
+    }
+    
+    func configure(annotation: FlutterAnnotation) {
+        image = annotation.icon
+        centerOffset = CGPoint(x: 0, y: -annotation.icon.size.height / 2)
+        clusteringIdentifier = "com.sgbasaraner.github/apple_maps"
+    }
+}
+
 
 class AppleMapsView: MKMapView, UIGestureRecognizerDelegate {
     var oldBounds: CGRect?
