@@ -20,6 +20,7 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
     let options: [String: Any]
     let markerDataSource: FlutterMarkerDataSource
     
+    private static let reuseId = "com.sgbasaraner/reuse"
     
     public init(withFrame frame: CGRect, withRegistrar registrar: FlutterPluginRegistrar, withargs args: Dictionary<String, Any> ,withId id: Int64) {
         self.options = args["options"] as! [String: Any]
@@ -33,12 +34,13 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
         super.init()
         
         self.mapView.delegate = self
+        self.mapView.register(FlutterAnnotationView.self, forAnnotationViewWithReuseIdentifier: AppleMapsController.reuseId)
         self.mapView.setCenterCoordinate(initialCameraPosition, animated: false)
         self.setMethodCallHandlers()
     }
     
     public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        return FlutterAnnotationView(annotation: annotation, reuseIdentifier: nil)
+        return mapView.dequeueReusableAnnotationView(withIdentifier: AppleMapsController.reuseId, for: annotation)
     }
     
     // onIdle

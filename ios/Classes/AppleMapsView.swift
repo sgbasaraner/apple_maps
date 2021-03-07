@@ -43,10 +43,14 @@ class FlutterAnnotationView: MKAnnotationView {
         }
     }
     
+    var lastId: String?
+    
     func configure(annotation: FlutterAnnotation) {
+        guard lastId != annotation.id else { return }
+        lastId = annotation.id
         image = annotation.icon
         centerOffset = CGPoint(x: 0, y: -annotation.icon.size.height / 2)
-        clusteringIdentifier = "com.sgbasaraner.github/apple_maps"
+        clusteringIdentifier = "com.sgbasaraner/cluster"
     }
 }
 
