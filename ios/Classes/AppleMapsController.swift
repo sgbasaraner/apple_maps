@@ -18,7 +18,7 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
     let channel: FlutterMethodChannel
     let initialCameraPosition: [String: Any]
     let options: [String: Any]
-    let markerManager: MarkerManager
+    let markerDataSource: FlutterMarkerDataSource
     
     
     public init(withFrame frame: CGRect, withRegistrar registrar: FlutterPluginRegistrar, withargs args: Dictionary<String, Any> ,withId id: Int64) {
@@ -29,7 +29,7 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
         self.registrar = registrar
         
         self.initialCameraPosition = args["initialCameraPosition"]! as! Dictionary<String, Any>
-        self.markerManager = MarkerManager(mapView: mapView)
+        self.markerDataSource = MarkerManager(mapView: mapView)
         super.init()
         
         self.mapView.delegate = self
@@ -76,7 +76,21 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
                             result(nil)
                             return
                         }
-                        self?.markerManager.addMarkers(markers)
+                        self?.markerDataSource.addMarkers(markers)
+                        result(nil)
+                    case "markers#remove":
+                        guard let list = args["idList"] as? [String] else {
+                            result(nil)
+                            return
+                        }
+                        self?.markerDataSource.removeMarkers(ids: list)
+                        result(nil)
+                    case "markers#replace":
+                        guard let list = args["markerList"] as? [Any], let markers = self?.parseMarkers(list: list) else {
+                            result(nil)
+                            return
+                        }
+                        self?.markerDataSource.replaceMarkers(newMarkers: markers)
                         result(nil)
                     default:
                         result(FlutterMethodNotImplemented)
@@ -84,6 +98,9 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
                     }
                 } else {
                     switch call.method {
+                    case "markers#clear":
+                        self?.markerDataSource.clearMarkers()
+                        result(nil)
                     case "map#getVisibleRegion":
                         result(self?.mapView.getVisibleRegion())
                     case "map#isCompassEnabled":

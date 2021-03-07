@@ -40,16 +40,14 @@ struct FlutterMarker {
     }
 }
 
-protocol MarkerDataSource {
-    associatedtype ID
-    associatedtype Marker
-    func addMarkers(_ newMarkers: [Marker])
-    func removeMarkers(ids: [ID])
-    func replaceMarkers(newMarkers: [Marker])
+protocol FlutterMarkerDataSource {
+    func addMarkers(_ newMarkers: [FlutterMarker])
+    func removeMarkers(ids: [String])
+    func replaceMarkers(newMarkers: [FlutterMarker])
     func clearMarkers()
 }
 
-class MarkerManager: MarkerDataSource {
+class MarkerManager: FlutterMarkerDataSource {
     private var markers: [String : MKAnnotation] = [:]
     
     weak var mapView: MKMapView?

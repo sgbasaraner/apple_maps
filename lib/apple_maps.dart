@@ -91,6 +91,34 @@ class AppleMapsController {
       'markerList': markers.map((e) => e.serialize()).toList(),
     });
   }
+
+  /// Clears all of the markers on the map, and adds given markers.
+  ///
+  /// The returned [Future] completes after the change has been made on the
+  /// platform side.
+  Future<void> replaceMarkers(List<FlutterMarker> markers) async {
+    await channel.invokeMethod<void>('markers#replace', <String, dynamic>{
+      'markerList': markers.map((e) => e.serialize()).toList(),
+    });
+  }
+
+  /// Removes the markers with given ids from the map.
+  ///
+  /// The returned [Future] completes after the change has been made on the
+  /// platform side.
+  Future<void> removeMarkers(List<String> idList) async {
+    await channel.invokeMethod<void>('markers#remove', <String, dynamic>{
+      'idList': idList,
+    });
+  }
+
+  /// Clears all markers from the map.
+  ///
+  /// The returned [Future] completes after the change has been made on the
+  /// platform side.
+  Future<void> clearMarkers() async {
+    await channel.invokeMethod<void>('markers#clear');
+  }
 }
 
 /// The position of the map "camera", the view point from which the world is
