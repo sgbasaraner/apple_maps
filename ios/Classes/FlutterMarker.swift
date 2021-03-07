@@ -18,6 +18,11 @@ class FlutterAnnotation: NSObject, MKAnnotation {
         self.icon = icon
         self.id = id
     }
+    
+    @objc
+    func memberAnnotations() -> [MKAnnotation] {
+        return [self]
+    }
 }
 
 struct FlutterMarker {
