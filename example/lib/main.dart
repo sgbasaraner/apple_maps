@@ -1,3 +1,8 @@
+import 'dart:collection';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -134,9 +139,20 @@ class PlaceAnnotationClusteredBodyState extends State<PlaceAnnotationClusteredBo
     this.controller = controller;
   }
 
+  final Random _rng = Random();
+
+  late BatchPinImageProcessorAnnotation _processor;
+
   @override
-  void dispose() {
-    super.dispose();
+  void initState() {
+    super.initState();
+    _processor = BatchPinImageProcessorAnnotation(
+        batchSize: 4,
+        onBatchFinished: (list) {
+          print("finished batch");
+          controller?.addMarkers(list);
+        },
+        onPinSelect: (p) => print(p.url));
   }
 
   @override
@@ -162,12 +178,107 @@ class PlaceAnnotationClusteredBodyState extends State<PlaceAnnotationClusteredBo
           TextButton(
             child: const Text('customAnnotation from bytes'),
             onPressed: () {
-              controller?.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-                target: center,
-                zoom: 12,
-              )));
+              final pins = imagesToLoad.map((s) {
+                // _annotationIdCounter++;
+                final end = 0.005;
+                final start = 0.05;
+                final randlat = _rng.nextDouble() * (end - start) + start;
+                final randlng = _rng.nextDouble() * (end - start) + start;
+                return Pin(s, LatLng(center.latitude - randlat, center.longitude + randlng));
+              }).toList();
+              _processor.process(pins);
             },
           ),
         ]);
+  }
+}
+
+abstract class BatchProcessor<T, R> {
+  final Function(List<R>) onBatchFinished;
+
+  BatchProcessor(this.onBatchFinished);
+
+  void process(List<T> items);
+}
+
+abstract class BaseBatchProcessor<T, R> implements BatchProcessor<T, R> {
+  int get batchSize;
+  Function(List<R>) get onBatchFinished;
+
+  List<T> _makeBatch(Queue<T> queue, int batchSizeUsed) {
+    final List<T> currentBatch = [];
+    while (currentBatch.length < batchSizeUsed && queue.isNotEmpty) {
+      currentBatch.add(queue.removeFirst());
+    }
+    return currentBatch;
+  }
+
+  Future<List<R>?> processBatch(List<T> batch);
+
+  int determineBatchSize(List<T> items) {
+    return batchSize;
+  }
+
+  @override
+  void process(List<T> items) async {
+    if (items.isEmpty) return;
+    final int batchSize = determineBatchSize(items);
+    final Queue<T> itemsQueue = Queue.from(items);
+    while (itemsQueue.isNotEmpty) {
+      final batch = _makeBatch(itemsQueue, batchSize);
+      final results = await processBatch(batch);
+      if (results != null) onBatchFinished(results);
+    }
+  }
+}
+
+class Pin {
+  final String url;
+  final LatLng position;
+  Uint8List? icon;
+
+  Pin(this.url, this.position);
+}
+
+class BatchPinImageProcessorAnnotation extends BaseBatchProcessor<Pin, FlutterMarker> {
+  final int batchSize;
+  final Function(List<FlutterMarker>) onBatchFinished;
+  final Function(Pin) onPinSelect;
+
+  BatchPinImageProcessorAnnotation({required this.batchSize, required this.onBatchFinished, required this.onPinSelect});
+
+  final HttpClient _httpClient = HttpClient();
+
+  @override
+  Future<List<FlutterMarker>?> processBatch(List<Pin> batch) async {
+    return Future.wait(batch.map((p) => _futureForPin(p).catchError((_) => null)))
+        .then((unfilteredList) => unfilteredList.where((e) => e != null).map((e) => e!).toList());
+  }
+
+  Future<FlutterMarker?> _futureForPin(Pin pin) async {
+    try {
+      var request = await _httpClient.getUrl(Uri.parse(pin.url));
+      var response = await request.close();
+      // handle invalid/empty pin icons
+      if (response.statusCode == 200) {
+        pin.icon = await consolidateHttpClientResponseBytes(response);
+      } else {
+        pin.icon = null;
+      }
+    } catch (_) {
+      pin.icon = null;
+    }
+    return _markerForPin(pin);
+  }
+
+  final _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  Random _rnd = Random();
+
+  String getRandomString(int length) =>
+      String.fromCharCodes(Iterable.generate(length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+
+  FlutterMarker? _markerForPin(Pin pin) {
+    if (pin.icon == null) return null;
+    return FlutterMarker(pin.url, pin.icon!, pin.position);
   }
 }

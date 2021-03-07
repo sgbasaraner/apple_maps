@@ -81,6 +81,16 @@ class AppleMapsController {
       'cameraUpdate': cameraUpdate._toJson(),
     });
   }
+
+  /// Adds the given markers to the map.
+  ///
+  /// The returned [Future] completes after the change has been made on the
+  /// platform side.
+  Future<void> addMarkers(List<FlutterMarker> markers) async {
+    await channel.invokeMethod<void>('markers#add', <String, dynamic>{
+      'markerList': markers.map((e) => e.serialize()).toList(),
+    });
+  }
 }
 
 /// The position of the map "camera", the view point from which the world is
@@ -666,8 +676,9 @@ class _AppleMapOptions {
 class FlutterMarker {
   final String id;
   final Uint8List icon;
+  final LatLng position;
 
-  FlutterMarker(this.id, this.icon);
+  FlutterMarker(this.id, this.icon, this.position);
 
   @override
   bool operator ==(Object o) {
@@ -678,4 +689,12 @@ class FlutterMarker {
 
   @override
   int get hashCode => id.hashCode;
+
+  List<dynamic> serialize() {
+    return [
+      id,
+      icon,
+      [position.latitude, position.longitude]
+    ];
+  }
 }

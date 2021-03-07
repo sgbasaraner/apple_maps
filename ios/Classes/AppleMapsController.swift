@@ -48,22 +48,35 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
     }
     
     private func setMethodCallHandlers() {
-            channel.setMethodCallHandler({(call: FlutterMethodCall, result: FlutterResult) -> Void in
+            channel.setMethodCallHandler({ [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
                 if let args :Dictionary<String, Any> = call.arguments as? Dictionary<String,Any> {
                     switch(call.method) {
                     case "map#update":
-                        self.mapView.interpretOptions(options: args["options"] as! Dictionary<String, Any>)
+                        self?.mapView.interpretOptions(options: args["options"] as! Dictionary<String, Any>)
                     case "camera#animate":
-                        let positionData :Dictionary<String, Any> = self.toPositionData(data: args["cameraUpdate"] as! Array<Any>, animated: true)
+                        guard let positionData :Dictionary<String, Any> = self?.toPositionData(data: args["cameraUpdate"] as! Array<Any>, animated: true) else {
+                            result(nil)
+                            return
+                        }
                         if !positionData.isEmpty {
-                            self.mapView.setCenterCoordinate(positionData, animated: true)
+                            self?.mapView.setCenterCoordinate(positionData, animated: true)
                         }
                         result(nil)
                     case "camera#move":
-                        let positionData :Dictionary<String, Any> = self.toPositionData(data: args["cameraUpdate"] as! Array<Any>, animated: false)
-                        if !positionData.isEmpty {
-                            self.mapView.setCenterCoordinate(positionData, animated: false)
+                        guard let positionData :Dictionary<String, Any> = self?.toPositionData(data: args["cameraUpdate"] as! Array<Any>, animated: false) else {
+                            result(nil)
+                            return
                         }
+                        if !positionData.isEmpty {
+                            self?.mapView.setCenterCoordinate(positionData, animated: false)
+                        }
+                        result(nil)
+                    case "markers#add":
+                        guard let list = args["markerList"] as? [Any], let markers = self?.parseMarkers(list: list) else {
+                            result(nil)
+                            return
+                        }
+                        self?.markerManager.addMarkers(markers)
                         result(nil)
                     default:
                         result(FlutterMethodNotImplemented)
@@ -72,27 +85,31 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
                 } else {
                     switch call.method {
                     case "map#getVisibleRegion":
-                        result(self.mapView.getVisibleRegion())
+                        result(self?.mapView.getVisibleRegion())
                     case "map#isCompassEnabled":
                         if #available(iOS 9.0, *) {
-                            result(self.mapView.showsCompass)
+                            result(self?.mapView.showsCompass)
                         } else {
                             result(false)
                         }
                     case "map#isPitchGesturesEnabled":
-                        result(self.mapView.isPitchEnabled)
+                        result(self?.mapView.isPitchEnabled)
                     case "map#isScrollGesturesEnabled":
-                        result(self.mapView.isScrollEnabled)
+                        result(self?.mapView.isScrollEnabled)
                     case "map#isZoomGesturesEnabled":
-                        result(self.mapView.isZoomEnabled)
+                        result(self?.mapView.isZoomEnabled)
                     case "map#isRotateGesturesEnabled":
-                        result(self.mapView.isRotateEnabled)
+                        result(self?.mapView.isRotateEnabled)
                     case "map#isMyLocationButtonEnabled":
-                        result(self.mapView.isMyLocationButtonShowing ?? false)
+                        result(self?.mapView.isMyLocationButtonShowing ?? false)
                     case "map#getMinMaxZoomLevels":
-                        result([self.mapView.minZoomLevel, self.mapView.maxZoomLevel])
+                        guard let strSelf = self else {
+                            result(nil)
+                            return
+                        }
+                        result([strSelf.mapView.minZoomLevel, strSelf.mapView.maxZoomLevel])
                     case "camera#getZoomLevel":
-                        result(self.mapView.calculatedZoomLevel)
+                        result(self?.mapView.calculatedZoomLevel)
                     default:
                         result(FlutterMethodNotImplemented)
                         return
@@ -137,5 +154,22 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
             }
             return [:]
         }
+    
+    private func parseMarkers(list: [Any]) -> [FlutterMarker]? {
+        return list.lazy
+            .compactMap { $0 as? [Any] }
+            .filter { $0.count == 3 }
+            .compactMap {
+                guard let id = $0[0] as? String,
+                      let bytes = $0[1] as? FlutterStandardTypedData,
+                      let coords = parseLatLng(list: $0[2]) else { return nil }
+                return FlutterMarker(from: bytes, id: id, coords: coords)
+            }
+    }
+    
+    private func parseLatLng(list: Any) -> CLLocationCoordinate2D? {
+        guard let doubleList = list as? [Double], doubleList.count == 2 else { return nil }
+        return CLLocationCoordinate2D(latitude: doubleList[0], longitude: doubleList[1])
+    }
 }
 

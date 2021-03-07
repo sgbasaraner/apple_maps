@@ -8,21 +8,35 @@
 import MapKit
 import Flutter
 
+class FlutterAnnotation: NSObject, MKAnnotation {
+    let coordinate: CLLocationCoordinate2D
+    let icon: UIImage
+    let id: String
+    
+    init(id: String, icon: UIImage, coords: CLLocationCoordinate2D) {
+        self.coordinate = coords
+        self.icon = icon
+        self.id = id
+    }
+}
+
 struct FlutterMarker {
     let id: String
     let icon: UIImage
+    let coordinates: CLLocationCoordinate2D
     
-    init?(from bytes: FlutterStandardTypedData, id: String) {
+    init?(from bytes: FlutterStandardTypedData, id: String, coords: CLLocationCoordinate2D) {
         let screenScale = UIScreen.main.scale
         guard let image = UIImage(data: bytes.data, scale: screenScale) else {
             return nil
         }
         self.icon = image
         self.id = id
+        self.coordinates = coords
     }
     
     func toAnnotation() -> MKAnnotation {
-        fatalError("TODO: implement")
+        return FlutterAnnotation(id: id, icon: icon, coords: coordinates)
     }
 }
 
