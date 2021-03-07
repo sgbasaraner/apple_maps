@@ -45,6 +45,9 @@ class AppleMapsController {
             southwest: LatLng(map["southwest"][0], map["southwest"][1]),
             northeast: LatLng(map["northeast"][0], map["northeast"][1])));
         break;
+      case 'markers#select':
+        _appleMapState.widget.onMarkerSelected?.call(call.arguments);
+        break;
       default:
         throw MissingPluginException();
     }
@@ -395,6 +398,7 @@ class AppleMap extends StatefulWidget {
     this.padding = EdgeInsets.zero,
     this.onCameraMoveStarted,
     this.onCameraIdle,
+    this.onMarkerSelected,
   }) : super(key: key);
 
   final MapCreatedCallback onMapCreated;
@@ -444,6 +448,10 @@ class AppleMap extends StatefulWidget {
   /// Called when camera movement has ended, there are no pending
   /// animations and the user has stopped interacting with the map.
   final Function(LatLngBounds)? onCameraIdle;
+
+  /// Called when camera movement has ended, there are no pending
+  /// animations and the user has stopped interacting with the map.
+  final Function(String)? onMarkerSelected;
 
   /// True if a "My Location" layer should be shown on the map.
   ///

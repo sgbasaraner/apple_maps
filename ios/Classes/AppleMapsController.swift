@@ -43,6 +43,13 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
         return mapView.dequeueReusableAnnotationView(withIdentifier: AppleMapsController.reuseId, for: annotation)
     }
     
+    public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        guard let view = view as? FlutterAnnotationView else { return }
+        mapView.deselectAnnotation(view.annotation, animated: false)
+        guard let selectedId = view.lastId else { return }
+        self.channel.invokeMethod("markers#select", arguments: selectedId)
+    }
+    
     // onIdle
     public func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
         self.channel.invokeMethod("camera#onIdle", arguments: mapView.getVisibleRegion())

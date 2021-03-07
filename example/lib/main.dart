@@ -171,6 +171,9 @@ class PlaceAnnotationClusteredBodyState extends State<PlaceAnnotationClusteredBo
                 onCameraIdle: (bounds) {
                   print("idle camera $bounds");
                 },
+                onMarkerSelected: (id) {
+                  print("Selected: $id");
+                },
                 initialCameraPosition: CameraPosition(
                   target: center,
                   zoom: 12,
