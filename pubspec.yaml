@@ -1,8 +1,7 @@
 name: apple_maps
-description: A new flutter plugin project.
+description: Apple Maps for Flutter.
 version: 0.0.1
-author:
-homepage:
+homepage: https://sgbasaraner.github.io
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
