@@ -16,7 +16,11 @@ enum BUTTON_IDS: Int {
 class FlutterAnnotationView: MKAnnotationView {
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        didSetAnnotation(annotation: annotation)
+        if #available(iOS 11.0, *) {
+            didSetAnnotation(annotation: annotation)
+        } else {
+            // Fallback on earlier versions
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -25,10 +29,15 @@ class FlutterAnnotationView: MKAnnotationView {
     
     override var annotation: MKAnnotation? {
         didSet {
-            didSetAnnotation(annotation: annotation)
+            if #available(iOS 11.0, *) {
+                didSetAnnotation(annotation: annotation)
+            } else {
+                // Fallback on earlier versions
+            }
         }
     }
     
+    @available(iOS 11.0, *)
     func didSetAnnotation(annotation: MKAnnotation?) {
         if let flutterAnnotation = annotation as? FlutterAnnotation {
             return configure(annotation: flutterAnnotation)
@@ -50,7 +59,11 @@ class FlutterAnnotationView: MKAnnotationView {
         lastId = annotation.id
         image = annotation.icon
         centerOffset = CGPoint(x: 0, y: -annotation.icon.size.height / 2)
-        clusteringIdentifier = "com.sgbasaraner/cluster"
+        if #available(iOS 11.0, *) {
+            clusteringIdentifier = "com.sgbasaraner/cluster"
+        } else {
+            // Fallback on earlier versions
+        }
     }
 }
 
@@ -259,11 +272,16 @@ class AppleMapsView: MKMapView, UIGestureRecognizerDelegate {
                 buttonContainer.layer.cornerRadius = 8
                 buttonContainer.tag = BUTTON_IDS.LOCATION.rawValue
                 buttonContainer.backgroundColor = .white
-                    let userTrackingButton = MKUserTrackingButton(mapView: self)
-                    userTrackingButton.translatesAutoresizingMaskIntoConstraints = false
-                    buttonContainer.addSubview(userTrackingButton)
-                    userTrackingButton.centerXAnchor.constraint(equalTo: buttonContainer.centerXAnchor).isActive = true
-                    userTrackingButton.centerYAnchor.constraint(equalTo: buttonContainer.centerYAnchor).isActive = true
+            if #available(iOS 11.0, *) {
+                let userTrackingButton = MKUserTrackingButton(mapView: self)
+                userTrackingButton.translatesAutoresizingMaskIntoConstraints = false
+                buttonContainer.addSubview(userTrackingButton)
+                userTrackingButton.centerXAnchor.constraint(equalTo: buttonContainer.centerXAnchor).isActive = true
+                userTrackingButton.centerYAnchor.constraint(equalTo: buttonContainer.centerYAnchor).isActive = true
+            } else {
+                // Fallback on earlier versions
+            }
+                    
                 
                 self.addSubview(buttonContainer)
                 buttonContainer.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -5 - self.layoutMargins.right).isActive = true

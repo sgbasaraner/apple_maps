@@ -34,13 +34,21 @@ public class AppleMapsController : NSObject, FlutterPlatformView, MKMapViewDeleg
         super.init()
         
         self.mapView.delegate = self
-        self.mapView.register(FlutterAnnotationView.self, forAnnotationViewWithReuseIdentifier: AppleMapsController.reuseId)
+        if #available(iOS 11.0, *) {
+            self.mapView.register(FlutterAnnotationView.self, forAnnotationViewWithReuseIdentifier: AppleMapsController.reuseId)
+        } else {
+            // Fallback on earlier versions
+        }
         self.mapView.setCenterCoordinate(initialCameraPosition, animated: false)
         self.setMethodCallHandlers()
     }
     
     public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        return mapView.dequeueReusableAnnotationView(withIdentifier: AppleMapsController.reuseId, for: annotation)
+        if #available(iOS 11.0, *) {
+            return mapView.dequeueReusableAnnotationView(withIdentifier: AppleMapsController.reuseId, for: annotation)
+        } else {
+            return nil
+        }
     }
     
     public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
